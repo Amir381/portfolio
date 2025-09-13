@@ -227,13 +227,18 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
   // AI Chatbot functionality
-  document.addEventListener('DOMContentLoaded', () => {
+  function initChatbot() {
     const chatbotButton = document.getElementById('chatbot-button');
     const chatbotWindow = document.getElementById('chatbot-window');
     const chatbotClose = document.getElementById('chatbot-close');
     const chatbotMessages = document.getElementById('chatbot-messages');
     const chatbotInputField = document.getElementById('chatbot-input-field');
     const chatbotSendBtn = document.getElementById('chatbot-send');
+
+    if (!chatbotButton || !chatbotWindow || !chatbotClose || !chatbotMessages || !chatbotInputField || !chatbotSendBtn) {
+      console.warn('Chatbot elements not found in DOM.');
+      return;
+    }
 
     // Function to append message to chat window
     function appendMessage(message, sender) {
@@ -417,7 +422,9 @@
         recognition.start();
       });
     }
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', initChatbot);
 
   // Language switching functionality
   const siteLanguageSelect = document.getElementById('site-language');
@@ -466,15 +473,20 @@
   let isDragging = false;
   let dragOffsetX, dragOffsetY;
 
-  chatbotButton.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    const rect = chatbotWidget.getBoundingClientRect();
-    dragOffsetX = e.clientX - rect.left;
-    dragOffsetY = e.clientY - rect.top;
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', stopDrag);
-    e.preventDefault();
-  });
+  if (chatbotWidget) {
+    const chatbotButton = document.getElementById('chatbot-button');
+    if (chatbotButton) {
+      chatbotButton.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = chatbotWidget.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        e.preventDefault();
+      });
+    }
+  }
 
   function drag(e) {
     if (isDragging) {
@@ -492,4 +504,42 @@
     document.removeEventListener('mousemove', drag);
     document.removeEventListener('mouseup', stopDrag);
   }
+
+  // Smooth scroll down button
+  const scrollDownBtn = document.createElement('a');
+  scrollDownBtn.href = '#';
+  scrollDownBtn.className = 'scroll-down d-flex align-items-center justify-content-center';
+  scrollDownBtn.innerHTML = '<i class="bi bi-arrow-down-short"></i>';
+  document.body.appendChild(scrollDownBtn);
+
+  scrollDownBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.scrollBy({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    });
+  });
+
+  // Show/hide scroll down button based on scroll position
+  function toggleScrollDown() {
+    if (window.scrollY + window.innerHeight < document.body.scrollHeight - 100) {
+      scrollDownBtn.classList.add('active');
+    } else {
+      scrollDownBtn.classList.remove('active');
+    }
+
+    // Move chatbot button to left when scroll down button is visible
+    const chatbotBtn = document.getElementById('chatbot-button');
+    const scrollTopBtn = document.querySelector('.scroll-top');
+    if (scrollDownBtn.classList.contains('active') && scrollTopBtn.classList.contains('active')) {
+      chatbotBtn.style.transform = 'translateX(-60px)';
+      chatbotBtn.style.transition = 'transform 0.5s ease';
+    } else {
+      chatbotBtn.style.transform = 'translateX(0)';
+      chatbotBtn.style.transition = 'transform 0.5s ease';
+    }
+  }
+
+  window.addEventListener('scroll', toggleScrollDown);
+  window.addEventListener('load', toggleScrollDown);
 })();
